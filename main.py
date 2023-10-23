@@ -1,5 +1,6 @@
 import json
 import time
+from collections import defaultdict
 
 import redis
 import tasktiger
@@ -62,6 +63,7 @@ async def get_task(task_id: str):
 @app.get("/statistics")
 async def get_statistics():
     tasks_processed = 0
+    tasks_processed_per_platform = defaultdict(int)
     total_processing_time = 0
     sentiment_distribution = {
         "POSITIVE": 0,
@@ -82,10 +84,12 @@ async def get_statistics():
             total_processing_time += float(task.get("request_completed_at")) - float(task.get("request_received_at"))
             sentiment_distribution[task.get("sentiment")] += 1
             topic_distribution[task.get("topic")] += 1
+            tasks_processed_per_platform[task.get("metadata").get("source_platform")] += 1
 
     return {
         "tasks_processed": tasks_processed,
         "average_processing_time": total_processing_time / tasks_processed,
         "sentiment_distribution": sentiment_distribution,
         "topic_distribution": topic_distribution,
+        "tasks_processed_per_platform": tasks_processed_per_platform,
     }

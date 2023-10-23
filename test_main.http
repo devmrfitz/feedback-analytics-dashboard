@@ -8,7 +8,7 @@ Content-Type: application/json
 {
   "feedback": "Nice",
   "metadata": {
-    "source_platform": "Twitter"
+    "source_platform": "LinkedIn"
   }
 }
 ###
