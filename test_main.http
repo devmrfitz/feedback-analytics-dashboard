@@ -1,11 +1,24 @@
 # Test your FastAPI endpoints
 
-GET http://127.0.0.1:8000/
+###
+
+POST http://127.0.0.1:8000/tasks/
+Content-Type: application/json
+
+{
+  "feedback": "Nice",
+  "metadata": {
+    "source_platform": "Twitter"
+  }
+}
+###
+
+GET http://127.0.0.1:8000/tasks/2bdb8ade686d71d71240651deb9014a0d11f5790ea4b85a5cfc18fc096ae1c9b
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:8000/hello/User
+GET http://127.0.0.1:8000/statistics
 Accept: application/json
 
 ###
