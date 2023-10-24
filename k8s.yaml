@@ -1,0 +1,172 @@
+
+# Enables the pods in a deployment to be accessible from outside the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-svc
+spec:
+  selector:
+    app: fastapi
+  ports:
+    - protocol: "TCP"
+      port: 8000
+      targetPort: 80
+  type: LoadBalancer
+
+---
+# fastapi Deployment
+# Defines the deployment of the app running in a pod on any worker node
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi
+  labels:
+    app: fastapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+        - name: fastapi
+          image: myimage:latest
+          command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+          ports:
+            - containerPort: 80
+          imagePullPolicy: IfNotPresent
+          resources:
+            # You must specify requests for CPU to autoscale
+            # based on CPU utilization
+            requests:
+              cpu: "250m"
+          env:
+            - name: REDIS_HOST
+              value: "redis-master.default.svc.cluster.local"
+            - name: REDIS_PASSWORD
+              value: "u7ZhkL1p0e"
+        - name: tasktiger-worker
+          image: myimage:latest
+          command: ["tasktiger", "--host", "redis-master.default.svc.cluster.local"]
+          imagePullPolicy: IfNotPresent
+          resources:
+            # You must specify requests for CPU to autoscale
+            # based on CPU utilization
+            requests:
+              cpu: "250m"
+          env:
+            - name: PYTHONPATH
+              value: "."
+            - name: REDIS_HOST
+              value: "redis-master.default.svc.cluster.local"
+
+
+---
+# kubernetes-streamlit LoadBalancer Service
+# Enables the pods in a deployment to be accessible from outside the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: streamlit-svc
+spec:
+  selector:
+    app: streamlit
+  ports:
+    - protocol: "TCP"
+      port: 3000
+      targetPort: 80
+  type: LoadBalancer
+
+---
+# streamlit Deployment
+# Defines the deployment of the app running in a pod on any worker node
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streamlit
+  labels:
+    app: streamlit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: streamlit
+  template:
+    metadata:
+      labels:
+        app: streamlit
+    spec:
+      containers:
+        - name: streamlit
+          image: myimage:latest
+          command: ["streamlit", "run", "dashboard.py"]
+          ports:
+            - containerPort: 80
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: STREAMLIT_SERVER_PORT
+              value: "80"
+            - name: STREAMLIT_SERVER_HEADLESS
+              value: "true"
+            - name: "BACKEND_URL"
+              value: "http://fastapi-svc.default.svc.cluster.local:8000"
+
+          resources:
+            # You must specify requests for CPU to autoscale
+            # based on CPU utilization
+            requests:
+              cpu: "250m"
+
+
+---
+# redis-master Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-master
+  labels:
+    app: redis
+    role: master
+    tier: backend
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
+    role: master
+    tier: backend
+
+---
+# redis-master Deployment
+apiVersion: apps/v1 #  for k8s versions before 1.9.0 use apps/v1beta2  and before 1.8.0 use extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis-master
+spec:
+  selector:
+    matchLabels:
+      app: redis
+      role: master
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: master
+        tier: backend
+    spec:
+      containers:
+      - name: master
+        image: registry.k8s.io/redis:e2e  # or just image: redis
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        ports:
+        - containerPort: 6379

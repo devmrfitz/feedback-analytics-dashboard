@@ -1,4 +1,5 @@
 import json
+import os
 import time
 from collections import defaultdict
 
@@ -20,9 +21,12 @@ class Payload(BaseModel):
     metadata: PayloadMetadata
 
 
+REDIS_HOST = os.getenv("REDIS_HOST") or "localhost"
+REDIS_PORT = os.getenv("REDIS_PORT") or 6379
+
 app = FastAPI()
-r = redis.Redis(host='localhost', port=6379)
-tiger = tasktiger.TaskTiger()
+r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
+tiger = tasktiger.TaskTiger(r)
 
 
 @app.get("/")
@@ -62,7 +66,7 @@ async def get_task(task_id: str):
 
 @app.get("/statistics")
 async def get_statistics():
-    tasks_processed = 0
+    tasks_processed = 1e-16  # Avoid division by zero
     tasks_processed_per_platform = defaultdict(int)
     total_processing_time = 0
     sentiment_distribution = {
@@ -87,7 +91,7 @@ async def get_statistics():
             tasks_processed_per_platform[task.get("metadata").get("source_platform")] += 1
 
     return {
-        "tasks_processed": tasks_processed,
+        "tasks_processed": int(tasks_processed),
         "average_processing_time": total_processing_time / tasks_processed,
         "sentiment_distribution": sentiment_distribution,
         "topic_distribution": topic_distribution,

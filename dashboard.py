@@ -1,7 +1,9 @@
+import os
+
 import requests
 import streamlit as st
 
-BACKEND_URL = "http://localhost:8000"
+BACKEND_URL = os.getenv("BACKEND_URL") or "http://localhost:8000"
 stats = requests.get(f"{BACKEND_URL}/statistics").json()
 
 st.title("Analytics Dashboard")

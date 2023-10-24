@@ -2,18 +2,18 @@
 
 ###
 
-POST http://127.0.0.1:8000/tasks/
+POST http://127.0.0.1:52062/tasks/
 Content-Type: application/json
 
 {
   "feedback": "Nice",
   "metadata": {
-    "source_platform": "LinkedIn"
+    "source_platform": "Twitter"
   }
 }
 ###
 
-GET http://127.0.0.1:8000/tasks/2bdb8ade686d71d71240651deb9014a0d11f5790ea4b85a5cfc18fc096ae1c9b
+GET http://127.0.0.1:52062/tasks/4bd2399fd9e7fa02482ea3e086b1de41625621bbbbead63bbbaa2ea093b17255
 Accept: application/json
 
 ###
