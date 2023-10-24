@@ -1,6 +1,8 @@
 # Real-Time Customer Feedback Analytics Dashboard
 
 This is a Python-based feedback analytics application that allows concurrent sentiment and topic analysis of feedbacks received from various source platforms. After processing, the aggregated results are displayed on a dashboard for easy visualization and interpretation.
+<img width="764" alt="image" src="https://github.com/devmrfitz/feedback-analytics-dashboard/assets/58381523/7e7f8d08-c55d-4382-bb98-dd278f3b2c29">
+
 
 ## Demo
 For demo purposes, the dashboard allows sending of sample requests, as well as checking status of requests using their task ID.
