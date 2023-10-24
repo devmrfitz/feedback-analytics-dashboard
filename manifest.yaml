@@ -15,7 +15,7 @@ spec:
 
 ---
 # fastapi Deployment
-# Defines the deployment of the app running in a pod on any worker node
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -64,7 +64,40 @@ spec:
             - name: REDIS_HOST
               value: "redis-master.default.svc.cluster.local"
 
+---
+# tasktiger-worker Deployment
 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasktiger-worker
+  labels:
+    app: tasktiger-worker
+spec:
+  replicas: 1  # Modify this if you want more replicas
+  selector:
+    matchLabels:
+      app: tasktiger-worker
+  template:
+    metadata:
+      labels:
+        app: tasktiger-worker
+    spec:
+      containers:
+        - name: tasktiger-worker
+          image: myimage:latest
+          command: ["tasktiger", "--host", "redis-master.default.svc.cluster.local"]
+          imagePullPolicy: IfNotPresent
+          resources:
+            # You must specify requests for CPU to autoscale
+            # based on CPU utilization
+            requests:
+              cpu: "250m"
+          env:
+            - name: PYTHONPATH
+              value: "."
+            - name: REDIS_HOST
+              value: "redis-master.default.svc.cluster.local"
 ---
 # kubernetes-streamlit LoadBalancer Service
 # Enables the pods in a deployment to be accessible from outside the cluster
@@ -83,7 +116,7 @@ spec:
 
 ---
 # streamlit Deployment
-# Defines the deployment of the app running in a pod on any worker node
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
